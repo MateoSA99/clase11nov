@@ -108,7 +108,7 @@ const CursoType = new GraphQLObjectType({
     profesor: {
       type: ProfesorType,
       resolve(parent, args) {
-        return Profesores.find((profesor) => profesor.id === parent.profesorId);
+        return Profesor.findById(parent.profesorId);
       },
     },
   }),
@@ -152,14 +152,15 @@ const RootQuery = new GraphQLObjectType({
         },
       },
       resolve(parent, args) {
-        return Cursos.find((curso) => curso.id === args.id);
+        return Curso.findById(args.id);
       },
     },
     cursos: {
       type: new GraphQLList(CursoType),
 
+
       resolve() {
-        return Cursos;
+        return Curso.find();
       },
     },
     profesor: {
@@ -212,16 +213,38 @@ const Mutation = new GraphQLObjectType({
         fecha: { type: GraphQLString },
         profesorId : {type :GraphQLID}
       },
-      resolve(parent, args) {
+      async resolve(parent, args) {
         const curso = new Curso({
           nombre: args.nombre,
           lenguaje: args.lenguaje,
           fecha: args.fecha,
           profesorId : args.profesorId
         });
-        return curso.save();
+        return await curso.save();
       },
     },
+    actualizarCurso: {
+      type: CursoType,
+      args: {
+        id : {type : GraphQLID},
+        nombre: { type: GraphQLString },
+        lenguaje: { type: GraphQLString },
+        fecha: { type: GraphQLString },
+        profesorId : {type :GraphQLID}
+      },
+      async resolve(parent, args) {
+        return await Curso.findByIdAndUpdate(args.id,{
+          nombre : args.nombre,
+          lenguaje :args.lenguaje,
+          fecha : args.fecha,
+          profesorId : args.profesorId
+        },{
+          new : true
+        })
+        
+      },
+    },
+
     agregarProfesor: {
       type: ProfesorType,
       args: {
